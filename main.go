@@ -11,7 +11,6 @@ var mt = new(sync.Mutex)
 
 func main() {
 
-	// defer timeTrack(time.Now(), "main")
 	defer fmt.Println("Finish=================")
 	fmt.Println("Start=================")
 
@@ -58,7 +57,7 @@ func main() {
 		tot += value
 		wc++
 	}
-	fmt.Println("number of token", len(tokens))
+	fmt.Println("number of word-token", len(tokens))
 	fmt.Println("total word count in map", tot)
 	fmt.Println("number of word", wc)
 
@@ -90,5 +89,4 @@ func count(ws *sync.WaitGroup, tokens []string, tmap map[string]int, group int, 
 			mt.Unlock()
 		}
 	}
-	// return tmap
 }
