@@ -48,12 +48,14 @@ func wordCountMapThread() {
 	// 하나의 스레드가 처리해야할 데이터 사이즈.
 	processSize := 1000
 
+	// 스레드 개수.
+	threadCount := 0
+
 	// 스레드 생성 및 실행.
-	i := 0
 	for remainWordLength > 0 {
 		wait.Add(1)
 		datPart := make([]byte, 0)
-		startIndex := i * processSize
+		startIndex := threadCount * processSize
 		endIndex := startIndex + processSize
 		if remainWordLength < processSize {
 			endIndex = startIndex + remainWordLength
@@ -62,7 +64,7 @@ func wordCountMapThread() {
 		// 스레드가 처리해야할 데이터 배열 생성.
 		datPart = append(datPart, dat[startIndex:endIndex]...)
 		remainWordLength -= processSize
-		i++
+		threadCount++
 		go addWordInfoToMap(datPart, storyMap, &wait)
 	}
 
@@ -75,7 +77,7 @@ func wordCountMapThread() {
 	fmt.Println("============================")
 	fmt.Println("total length : ", len(dat))
 	fmt.Println("Process Size : ", processSize)
-	fmt.Println("total thread count : ", i)
+	fmt.Println("total thread count : ", threadCount)
 }
 
 func addWordInfoToMap(dat []byte, storyMap map[string]int, wait *sync.WaitGroup) {
