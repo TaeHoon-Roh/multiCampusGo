@@ -31,11 +31,20 @@ func main() {
 		fmt.Println("Error : ", err)
 		return
 	}
+
+	// 스레드가 처리해야 할 남은 길이.
 	remainWordLength := len(dat)
 
+	// 스레드 wait 그룹.
 	var wait sync.WaitGroup
+
+	// 결과 값을 저장할 맵.
 	storyMap := make(map[string]int)
+
+	// 하나의 스레드가 처리해야할 데이터 사이즈.
 	processSize := 1000
+
+	// 스레드 생성 및 실행.
 	i := 0
 	for {
 		wait.Add(1)
@@ -331,4 +340,3 @@ func checkCard(card []int) int {
 	}
 	return flag
 }
-
