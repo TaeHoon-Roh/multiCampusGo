@@ -47,31 +47,45 @@ func wordCountMapThreadWithChannel() {
 	totalLength := len(dat)
 	halfLength := totalLength / 2
 
+	var wait sync.WaitGroup
+	wait.Add(4)
+
 	go func() {
+		defer wait.Done()
 		datPart := make([]byte, 0)
 		datPart = append(datPart, dat[0:halfLength]...)
 		processWords(datPart, threadChannel1)
 	}()
 
 	go func() {
+		defer wait.Done()
 		datPart := make([]byte, 0)
 		datPart = append(datPart, dat[halfLength:totalLength]...)
 		processWords(datPart, threadChannel2)
 	}()
 
 	go func() {
+		defer wait.Done()
 		threadResult1 := <-threadChannel1
 		inputToMap(threadResult1, storyMap)
 	}()
 
 	go func() {
+		defer wait.Done()
 		threadResult2 := <-threadChannel2
 		inputToMap(threadResult2, storyMap)
 	}()
+
+	wait.Wait()
+
+	fmt.Println("================")
+	for i, v := range storyMap {
+		fmt.Println(i, " : ", v)
+	}
 }
 
-func processWords(datPart []byte, result chan []byte) {
-	fmt.Println("processWords")
+func removeSpecialWords(datPart []byte, result chan []byte) {
+	fmt.Println("removeSpecialWords")
 	// 공백, A~Z, a~z
 	for i := 0; i < len(datPart); i++ {
 		v := datPart[i]
@@ -105,11 +119,6 @@ func inputToMap(datPart []byte, storyMap map[string]int) {
 			storyMap[v]++
 		}
 	}
-
-	for i, v := range storyMap {
-		fmt.Println(i, " : ", v)
-	}
-
 }
 
 func wordCountMapThread() {
