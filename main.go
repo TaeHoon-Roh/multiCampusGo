@@ -25,7 +25,91 @@ func main() {
 
 	// startGameWithDealer()
 
-	wordCountMapThread()
+	// wordCountMapThread()
+
+	wordCountMapThreadWithChannel()
+}
+
+func wordCountMapThreadWithChannel() {
+	// 파일을 읽어옴.
+	dat, err := ioutil.ReadFile("C:\\workspace_go\\text\\test02.txt")
+	if err != nil {
+		fmt.Println("Error : ", err)
+		return
+	}
+
+	// 결과 값을 저장할 맵.
+	storyMap := make(map[string]int)
+
+	threadChannel1 := make(chan []byte)
+	threadChannel2 := make(chan []byte)
+
+	totalLength := len(dat)
+	halfLength := totalLength / 2
+
+	go func() {
+		datPart := make([]byte, 0)
+		datPart = append(datPart, dat[0:halfLength]...)
+		processWords(datPart, threadChannel1)
+	}()
+
+	go func() {
+		datPart := make([]byte, 0)
+		datPart = append(datPart, dat[halfLength:totalLength]...)
+		processWords(datPart, threadChannel2)
+	}()
+
+	go func() {
+		threadResult1 := <-threadChannel1
+		inputToMap(threadResult1, storyMap)
+	}()
+
+	go func() {
+		threadResult2 := <-threadChannel2
+		inputToMap(threadResult2, storyMap)
+	}()
+}
+
+func processWords(datPart []byte, result chan []byte) {
+	fmt.Println("processWords")
+	// 공백, A~Z, a~z
+	for i := 0; i < len(datPart); i++ {
+		v := datPart[i]
+		if (v == ' ' || ('A' <= v && v <= 'Z') || ('a' <= v && v <= 'z')) == false {
+			// fmt.Println("remove : ", v, " : ", string(v))
+			datPart = append(datPart[:i], datPart[i+1:]...)
+			i--
+		}
+	}
+	result <- datPart
+}
+
+func inputToMap(datPart []byte, storyMap map[string]int) {
+	fmt.Println("inputToMap")
+
+	// 파일 내용을 저장할 문자열 변수.
+	story := string(datPart)
+	// fmt.Println(story)
+
+	var splitStory []string
+	splitStory = strings.Split(story, " ")
+
+	for _, v := range splitStory {
+		if v == " " || v == "" {
+			continue
+		}
+		count := storyMap[v]
+		if count == 0 {
+			storyMap[v] = 1
+		} else {
+			storyMap[v]++
+		}
+	}
+
+	for i, v := range storyMap {
+		fmt.Println(i, " : ", v)
+	}
+
 }
 
 func wordCountMapThread() {
