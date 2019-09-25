@@ -54,10 +54,12 @@ func main() {
 		if remainWordLength < processSize {
 			endIndex = startIndex + remainWordLength
 		}
+
+		// 스레드가 처리해야할 데이터 배열 생성.
 		datPart = append(datPart, dat[startIndex:endIndex]...)
 		remainWordLength -= processSize
 		i++
-		go getCountOfWord(datPart, storyMap, &wait)
+		go addWordInfoToMap(datPart, storyMap, &wait)
 		if remainWordLength <= 0 {
 			break
 		}
@@ -76,10 +78,10 @@ func main() {
 
 }
 
-func getCountOfWord(dat []byte, storyMap map[string]int, wait *sync.WaitGroup) {
+func addWordInfoToMap(dat []byte, storyMap map[string]int, wait *sync.WaitGroup) {
 	defer wait.Done()
 
-	fmt.Println("Start getCountOfWord : ", len(dat))
+	fmt.Println("Start addWordInfoToMap : ", len(dat))
 
 	// 공백, A~Z, a~z
 	for i := 0; i < len(dat); i++ {
@@ -109,10 +111,6 @@ func getCountOfWord(dat []byte, storyMap map[string]int, wait *sync.WaitGroup) {
 			storyMap[v]++
 		}
 	}
-}
-
-func mergeCountOfWord(maps ...map[string]int) {
-
 }
 
 type CardDealer struct {
