@@ -15,6 +15,7 @@ func main() {
 	fmt.Println("Start=================")
 
 	var ws sync.WaitGroup
+	var tokens []string
 
 	// read text file
 	data, err := ioutil.ReadFile("test.txt")
@@ -22,30 +23,52 @@ func main() {
 		fmt.Println(err)
 	}
 
-	// get length of data
-	sz := len(data)
-
-	// convert special character to blank
-	for i := 0; i < sz; i++ {
-		if !(data[i] >= 'A' && data[i] <= 'Z') && !(data[i] >= 'a' && data[i] <= 'z') && data[i] != ' ' {
-			data[i] = ' '
-		}
-	}
-	fmt.Println(string(data))
-
-	tokens := parse(strings.ToLower(string(data)))
-	//tokens := parse(string(data))
+	chan1 := make(chan int)
+	chan2 := make(chan int)
 
 	// create map
 	tmap := make(map[string]int)
 
-	// run go-routine
-	loopcnt := 2
-	for i := 0; i < loopcnt; i++ {
-		ws.Add(1)
-		// count word in text
-		go count(&ws, tokens, tmap, i, loopcnt)
-	}
+	ws.Add(1)
+	go func() {
+		defer ws.Done()
+		fmt.Println(">> collect alphabet characters from text <<")
+		sz := len(data)
+		// convert special character to blank
+		for i := 0; i < sz; i++ {
+			if !(data[i] >= 'A' && data[i] <= 'Z') && !(data[i] >= 'a' && data[i] <= 'z') && data[i] != ' ' {
+				data[i] = ' '
+			}
+		}
+		//fmt.Println(string(data))
+		chan1 <- 0
+	}()
+
+	ws.Add(1)
+	go func() {
+		defer ws.Done()
+		n := <-chan1
+		fmt.Println("from chan1", n)
+		fmt.Println(">> parse words & tokenize them from text <<")
+		tokens = parse(strings.ToLower(string(data)))
+		chan2 <- 1
+	}()
+
+	ws.Add(1)
+
+	go func() {
+		defer ws.Done()
+		n := <-chan2
+		fmt.Println("from chan2", n)
+		fmt.Println(">> count word-token <<")
+		// run go-routine
+		loopcnt := 2
+		for i := 0; i < loopcnt; i++ {
+			ws.Add(1)
+			// count word in text
+			go count(&ws, tokens, tmap, i, loopcnt)
+		}
+	}()
 
 	ws.Wait()
 
