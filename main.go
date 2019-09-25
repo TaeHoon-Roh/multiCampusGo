@@ -50,7 +50,7 @@ func wordCountMapThread() {
 
 	// 스레드 생성 및 실행.
 	i := 0
-	for {
+	for remainWordLength > 0 {
 		wait.Add(1)
 		datPart := make([]byte, 0)
 		startIndex := i * processSize
@@ -64,9 +64,6 @@ func wordCountMapThread() {
 		remainWordLength -= processSize
 		i++
 		go addWordInfoToMap(datPart, storyMap, &wait)
-		if remainWordLength <= 0 {
-			break
-		}
 	}
 
 	wait.Wait()
