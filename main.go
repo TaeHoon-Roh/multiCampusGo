@@ -25,6 +25,10 @@ func main() {
 
 	// startGameWithDealer()
 
+	wordCountMapThread()
+}
+
+func wordCountMapThread() {
 	// 파일을 읽어옴.
 	dat, err := ioutil.ReadFile("C:\\workspace_go\\text\\test02.txt")
 	if err != nil {
@@ -75,7 +79,6 @@ func main() {
 	fmt.Println("total length : ", len(dat))
 	fmt.Println("Process Size : ", processSize)
 	fmt.Println("total thread count : ", i)
-
 }
 
 func addWordInfoToMap(dat []byte, storyMap map[string]int, wait *sync.WaitGroup) {
