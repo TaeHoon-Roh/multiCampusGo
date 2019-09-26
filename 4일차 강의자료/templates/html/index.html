@@ -1,0 +1,47 @@
+<html>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script type="text/javascript">
+        function getItem() {
+            var test = new Object();
+            $.ajax(
+                    {
+                        type: 'POST',
+                        url: '/',
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        data: {"test": "hihi"},
+                        success: function (data) {
+                            console.log(data);
+                            for (let i = 0 ; i < data.City.length ; i++){
+                               $('#instanceTable').append('<span>' + data.City[i] + ' </span>');
+                            }
+                        },
+                        error: function (request, status, error) {
+                            console.log('code: ' + request.status + "\n" + 'message: ' + request.responseText + "\n" + 'error: ' + error);
+                        }
+                    })
+        }
+        //화면이 뜨면 생성
+        // $(document).ready(function () {
+        //     ajaxSend()
+        // });
+    </script>
+    <title>
+        "My First"
+    </title>
+</head>
+
+<body>
+    <h1>
+        hihi
+    </h1>
+    <button onclick="getItem()">temp</button>
+    <div id="instanceTable">
+
+        
+    </div>
+</body>
+
+</html>
