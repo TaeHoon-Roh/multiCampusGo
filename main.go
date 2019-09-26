@@ -1,9 +1,11 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -27,7 +29,28 @@ func main() {
 
 	// wordCountMapThread()
 
-	wordCountMapThreadWithChannel()
+	// wordCountMapThreadWithChannel()
+
+	dbName := "mysql"
+	dbSource := "root:1234@tcp(127.0.0.1:3306)/"
+	database, err := sql.Open(dbName, dbSource)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	if err := database.Ping(); err != nil {
+		fmt.Println("DB Connection Error!")
+		os.Exit(1)
+	}
+
+	q := "show databases"
+	result, exeError := database.Query(q)
+
+	if exeError != nil {
+		fmt.Println()
+	}
+
 }
 
 func wordCountMapThreadWithChannel() {
@@ -54,14 +77,14 @@ func wordCountMapThreadWithChannel() {
 		defer wait.Done()
 		datPart := make([]byte, 0)
 		datPart = append(datPart, dat[0:halfLength]...)
-		processWords(datPart, threadChannel1)
+		removeSpecialWords(datPart, threadChannel1)
 	}()
 
 	go func() {
 		defer wait.Done()
 		datPart := make([]byte, 0)
 		datPart = append(datPart, dat[halfLength:totalLength]...)
-		processWords(datPart, threadChannel2)
+		removeSpecialWords(datPart, threadChannel2)
 	}()
 
 	go func() {
