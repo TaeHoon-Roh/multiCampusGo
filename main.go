@@ -1,56 +1,96 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"net"
+	"net/http"
 	"os"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gin-gonic/gin"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func main() {
-	// startCardGame()
+	/*
+		g := gin.Default()
+		g.LoadHTMLGlob("/root/workspace_go/src/main/index.html")
+		g.GET("/", indexPage)
+		g.POST("/", indexPostPage)
+		g.Run(":0002")
+	*/
 
-	// card := makeCard()
-	// fmt.Println("origin card : ", card)
-	// result := shuffleCard(card)
-	// fmt.Println("suffled card : ", result)
-
-	// a := make(map[int]int)
-	// a[1] = 100
-	// val, flag := a[1]
-	// fmt.Println("val : ", val, ", flag : ", flag)
-	// fmt.Println("a : ", a[1])
-
-	// startGameWithDealer()
-
-	// wordCountMapThread()
-
-	// wordCountMapThreadWithChannel()
-
-	dbName := "mysql"
-	dbSource := "root:1234@tcp(127.0.0.1:3306)/"
-	database, err := sql.Open(dbName, dbSource)
+	connect, err := net.Dial("tcp", "127.0.0.1:65000")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	if err := database.Ping(); err != nil {
-		fmt.Println("DB Connection Error!")
-		os.Exit(1)
+	// some event happens
+	/*
+		for {
+			// heartbeat
+			connect.Write([]byte("start"))
+			fmt.Println("Send Data : ", "start")
+			time.Sleep(time.Second * 1)
+		}
+	*/
+
+	userCount := 4
+	command := "add_user"
+	for i := 1; i <= userCount; i++ {
+		connect.Write([]byte(command))
+		fmt.Println("Send Data : ", command)
+		time.Sleep(time.Second * 1)
 	}
 
-	q := "show databases"
-	result, exeError := database.Query(q)
+	command = "start"
+	connect.Write([]byte(command))
+	fmt.Println("Send Data : ", command)
+}
 
-	if exeError != nil {
-		fmt.Println()
-	}
+func indexPage(c *gin.Context) {
+	c.HTML(200, "index.html", gin.H{})
+}
 
+func indexPostPage(c *gin.Context) {
+	myCity := make([]int, 10)
+	c.JSON(http.StatusOK, gin.H{
+		"City": myCity,
+		"Data": "checked_wd",
+	})
+}
+
+func dbExample() {
+	/*
+		dbName := "mysql"
+		dbSource := "root:1234@tcp(127.0.0.1:3306)/testDB"
+		db, err := sql.Open(dbName, dbSource)
+		defer db.Close()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		if err := db.Ping(); err != nil {
+			fmt.Println("DB Connection Error!")
+			os.Exit(1)
+		}
+
+		q := "show databases"
+		result, exeError := db.Query(q)
+
+		if exeError != nil {
+			fmt.Println("exeError : ", exeError)
+		} else {
+			fmt.Println("result : ", result)
+		}
+	*/
 }
 
 func wordCountMapThreadWithChannel() {
