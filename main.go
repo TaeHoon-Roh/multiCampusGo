@@ -10,7 +10,6 @@ import (
 
 func main() {
 	run()
-
 }
 
 func run() {
@@ -24,6 +23,8 @@ func run() {
 	//사용할 문자만 저장
 	repDat := make([]byte, 0)
 
+	wait := sync.WaitGroup{}
+
 	for _, byte := range dat {
 		if 'A' <= byte && byte <= 'Z' || 'a' <= byte && byte <= 'z' || byte == ' ' {
 			repDat = append(repDat, byte)
@@ -33,42 +34,27 @@ func run() {
 	//space로 단어별 절단
 	oriStrArr := strings.Split(string(repDat), " ")
 
-	resultArr := make([]map[string]int, 0)
-
-	const ThreadCount int = 4
+	const ThreadCount int = 2
 
 	splitCount := len(oriStrArr) / ThreadCount
 
-	wait := sync.WaitGroup{}
+	chanStr1 := make(chan string)
+	chanStr2 := make(chan string)
 
-	for len(oriStrArr) > 0 {
-		var splitStrArr []string
+	strings1 := oriStrArr[:splitCount]
+	strings2 := oriStrArr[splitCount:]
 
-		if len(oriStrArr) > splitCount {
-			splitStrArr = oriStrArr[:splitCount]
-			oriStrArr = oriStrArr[splitCount:]
-		} else {
-			splitStrArr = oriStrArr
-			oriStrArr = make([]string, 0)
-		}
+	wait.Add(1)
+	go strChanSend(&wait, chanStr1, &strings1)
+	wait.Add(1)
+	go strChanSend(&wait, chanStr2, &strings2)
 
-		//Thread 생성 및 실행
-		wait.Add(1)
-		go func(splitStr []string) {
-			defer wait.Done()
+	resultArr := make([]map[string]int, 0)
 
-			countMap := make(map[string]int)
-
-			for _, str := range splitStr {
-				if str != "" {
-					countMap[str]++
-				}
-			}
-
-			resultArr = append(resultArr, countMap)
-		}(splitStrArr)
-
-	}
+	wait.Add(1)
+	go strChanReceive(&wait, chanStr1, &resultArr)
+	wait.Add(1)
+	go strChanReceive(&wait, chanStr2, &resultArr)
 
 	//모든 Thread 실행 완료까지 대기
 	wait.Wait()
@@ -102,6 +88,34 @@ func run() {
 	}
 
 	fmt.Printf("Total Count : %d", totCnt)
+}
+
+func strChanSend(wait *sync.WaitGroup, sendChan chan<- string, splitStrs *[]string) {
+	defer wait.Done()
+
+	for _, str := range *splitStrs {
+		if str != "" {
+			sendChan <- str
+		}
+	}
+
+	close(sendChan)
+}
+
+func strChanReceive(wait *sync.WaitGroup, receiveChan <-chan string, resultArr *[]map[string]int) {
+	defer wait.Done()
+
+	fmt.Println("start", wait)
+
+	countMap := make(map[string]int)
+
+	for chanStr := range receiveChan {
+		countMap[chanStr]++
+	}
+
+	fmt.Println("count thread end")
+
+	*resultArr = append(*resultArr, countMap)
 }
 
 type WordObj struct {
