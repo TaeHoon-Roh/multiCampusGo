@@ -38,23 +38,20 @@ func run() {
 
 	splitCount := len(oriStrArr) / ThreadCount
 
-	chanStr1 := make(chan string)
-	chanStr2 := make(chan string)
-
-	strings1 := oriStrArr[:splitCount]
-	strings2 := oriStrArr[splitCount:]
-
-	wait.Add(1)
-	go strChanSend(&wait, chanStr1, &strings1)
-	wait.Add(1)
-	go strChanSend(&wait, chanStr2, &strings2)
-
 	resultArr := make([]map[string]int, 0)
 
-	wait.Add(1)
-	go strChanReceive(&wait, chanStr1, &resultArr)
-	wait.Add(1)
-	go strChanReceive(&wait, chanStr2, &resultArr)
+	for i := 0; i < ThreadCount; i++ {
+		chanStr1 := make(chan string)
+
+		strings1 := oriStrArr[:splitCount]
+		oriStrArr = oriStrArr[splitCount:]
+
+		wait.Add(1)
+		go strChanSend(&wait, chanStr1, &strings1)
+
+		wait.Add(1)
+		go strChanReceive(&wait, chanStr1, &resultArr)
+	}
 
 	//모든 Thread 실행 완료까지 대기
 	wait.Wait()
